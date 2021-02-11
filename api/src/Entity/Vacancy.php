@@ -36,14 +36,14 @@ class Vacancy
     private string $title;
 
     /**
-     * @ORM\ManyToMany(targetEntity=VacancySkill::class)
+     * @ORM\OneToMany(targetEntity=VacancySkill::class, mappedBy="vacancy")
      */
     private Collection $skills;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Relevance::class, mappedBy="vacancy")
-     */
-    private Collection $relevance;
+//    /**
+//     * @ORM\OneToMany(targetEntity=Relevance::class, mappedBy="vacancy")
+//     */
+//    private Collection $relevance;
 
     public function __construct(string $title, string $description, array $skills)
     {
@@ -55,7 +55,7 @@ class Vacancy
         $this->title = $title;
         $this->description = $description;
         $this->skills = new ArrayCollection($skills);
-        $this->relevance = new ArrayCollection();
+//        $this->relevance = new ArrayCollection();
     }
 
     public function getId(): int

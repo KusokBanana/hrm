@@ -13,7 +13,6 @@ class Skill
 {
     /**
      * @ORM\Id
-     * @ORM\GeneratedValue
      * @ORM\Column(type="string", length=255, unique=true)
      */
     private string $code;

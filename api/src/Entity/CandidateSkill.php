@@ -12,12 +12,15 @@ use Doctrine\ORM\Mapping as ORM;
 class CandidateSkill
 {
     /**
+     * @ORM\Id
      * @ORM\ManyToOne(targetEntity=Candidate::class)
      */
     private Candidate $candidate;
 
     /**
+     * @ORM\Id
      * @ORM\ManyToOne(targetEntity=Skill::class)
+     * @ORM\JoinColumn(name="skill_code", referencedColumnName="code")
      */
     private Skill $skill;
 

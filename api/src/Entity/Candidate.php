@@ -89,7 +89,7 @@ class Candidate
     private ?string $status;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Skill::class)
+     * @ORM\OneToMany(targetEntity=CandidateSkill::class, mappedBy="candidate")
      */
     private Collection $skills;
 
