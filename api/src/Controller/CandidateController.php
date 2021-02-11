@@ -42,8 +42,8 @@ class CandidateController extends AbstractController
         $queryBuilder = $this->entityManager->createQueryBuilder()
             ->select('candidate')
             ->from(Candidate::class, 'candidate')
-            ->join('candidate.mostRelevant', 'most_relevant')
-            ->orderBy('most_relevant.fit', 'DESC')
+//            ->join('candidate.mostRelevant', 'most_relevant')
+//            ->orderBy('most_relevant.fit', 'DESC')
             ->addOrderBy('candidate.id', 'DESC')
             ->setMaxResults($limit)
             ->setFirstResult($offset);
