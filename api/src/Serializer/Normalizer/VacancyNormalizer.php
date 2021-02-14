@@ -3,6 +3,7 @@
 namespace App\Serializer\Normalizer;
 
 use App\Entity\Vacancy;
+use App\Entity\VacancySkill;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
@@ -18,10 +19,16 @@ class VacancyNormalizer implements NormalizerInterface, CacheableSupportsMethodI
 
         return [
             'id' => $vacancy->getId(),
+            'created_at' => $this->normalizer->normalize($vacancy->getCreatedAt(), $format, $context),
             'title' => $vacancy->getTitle(),
             'description' => $vacancy->getDescription(),
-            'created_at' => $this->normalizer->normalize($vacancy->getCreatedAt(), $format, $context),
-            'skills' => $this->normalizer->normalize($vacancy->getSkills(), $format, $context),
+            'skills' => array_map(
+                fn(VacancySkill $skill) => [
+                    'skill' => $this->normalizer->normalize($skill->getSkill(), $format, $context),
+                    'level' => $skill->getLevel(),
+                ],
+                $vacancy->getSkills(),
+            ),
         ];
     }
 

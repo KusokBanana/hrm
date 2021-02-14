@@ -45,22 +45,27 @@ class Vacancy
 //     */
 //    private Collection $relevance;
 
-    public function __construct(string $title, string $description, array $skills)
+    public function __construct(string $title, string $description/*, array $skills*/)
     {
-        Assert::thatAll($skills)->isInstanceOf(VacancySkill::class);
+//        Assert::thatAll($skills)->isInstanceOf(VacancySkill::class);
         Assert::that($title)->minLength(1);
         Assert::that($description)->minLength(1);
 
         $this->createdAt = new \DateTime();
         $this->title = $title;
         $this->description = $description;
-        $this->skills = new ArrayCollection($skills);
+//        $this->skills = new ArrayCollection($skills);
 //        $this->relevance = new ArrayCollection();
     }
 
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getTitle(): string
+    {
+        return $this->title;
     }
 
     public function getDescription(): string
