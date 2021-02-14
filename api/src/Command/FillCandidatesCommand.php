@@ -3,12 +3,18 @@
 namespace App\Command;
 
 use App\Entity\Candidate;
+use App\Entity\CandidateSex;
+use App\Entity\CandidateSkill;
+use App\Entity\CandidateStatuses;
 use App\Entity\EducationHistory;
 use App\Entity\Experience;
 use App\Entity\Skill;
+use App\Entity\SkillTypes;
 use App\Entity\Specialization;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
+use Faker\Factory as FakerFactory;
+use Faker\Generator as FakerGenerator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -22,8 +28,9 @@ class FillCandidatesCommand extends Command
     private Connection $connection;
     private EntityManagerInterface $entityManager;
     private HttpClientInterface $client;
+    private FakerGenerator $faker;
 
-    private array $skills = [];
+    private array $allSkills = [];
 
     public function __construct(
         Connection $connection,
@@ -36,6 +43,7 @@ class FillCandidatesCommand extends Command
         $this->connection = $connection;
         $this->entityManager = $entityManager;
         $this->client = $client;
+        $this->faker = FakerFactory::create('ru_RU');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -45,7 +53,6 @@ class FillCandidatesCommand extends Command
         $this->entityManager->transactional(function() use ($data) {
             foreach ($data as $item) {
                 $candidate = $this->parseCandidate($item);
-
                 $this->entityManager->persist($candidate);
             }
         });
@@ -55,23 +62,34 @@ class FillCandidatesCommand extends Command
 
     private function parseCandidate(array $item): Candidate
     {
-        $sex = $item['gender'] === 'Мужчина' ? 'M' : 'F';
+        $sex = $item['gender'] === 'Мужчина' ? CandidateSex::MALE : CandidateSex::FEMALE;
 
-        return new Candidate(
+        $candidate = new Candidate(
             $this->fetchName($sex),
             $sex,
             trim($item['area']) ?: null,
             $this->parseBirthDate($item),
             $this->parseTitle($item),
-            $this->parseSpecialization($item),
+//            $this->parseSpecialization($item),
             $this->parseSalary($item),
-            trim($item['education_level']) ?: null,
+//            trim($item['education_level']) ?: null,
             $this->parseEducationHistory($item),
             $this->parseExperience($item),
             $this->parseLanguages($item),
             trim($item['skills']) ?: null,
-            $this->parseSkills($item)
+//            $this->parseSkills($item),
+            CandidateStatuses::STATUS_ACTIVE_SEARCH
         );
+
+        $skills = $this->parseSkills($item);
+
+        foreach ($skills as $skill) {
+            $level = $this->faker->randomFloat(2, 0.01, 0.99);
+            $candidateSkill = new CandidateSkill($candidate, $skill, $level);
+            $this->entityManager->persist($candidateSkill);
+        }
+
+        return $candidate;
     }
 
     private function parseBirthDate(array $item): ?\DateTime
@@ -139,20 +157,25 @@ class FillCandidatesCommand extends Command
 
     private function parseSkills(array $item): array
     {
-        return array_map(
-            function(string $name) {
-                if (array_key_exists($name, $this->skills)) {
-                    return $this->skills[$name];
-                }
+        $skills = [];
 
-                $skill = new Skill($name);
+        foreach ($item['skill_set'] ?: [] as $name) {
+            $skill = new Skill($name, SkillTypes::TYPE_HARD);
 
-                $this->entityManager->persist($skill);
+            if (array_key_exists($skill->getCode(), $this->allSkills)) {
+                $skill = $this->allSkills[$skill->getCode()];
+            }
 
-                return $this->skills[$name] = $skill;
-            },
-            $item['skill_set'] ?: []
-        );
+            if (array_key_exists($skill->getCode(), $skills)) { // duplicate
+                continue;
+            }
+
+            $skills[$skill->getCode()] = $skill;
+            $this->allSkills[$skill->getCode()] = $skill;
+            $this->entityManager->persist($skill);
+        }
+
+        return $skills;
     }
 
     private function parseExperience(array $item): array
@@ -198,7 +221,7 @@ class FillCandidatesCommand extends Command
 
     private function fetchName(string $sex): string
     {
-        $sex = $sex === 'M' ? 'male' : 'female';
+        $sex = $sex === CandidateSex::MALE ? 'male' : 'female';
         $result = $this->client->request('GET', sprintf('https://api.namefake.com/russian-russia/%s/', $sex));
         return $result->toArray()['name'];
     }

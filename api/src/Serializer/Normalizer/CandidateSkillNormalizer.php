@@ -2,30 +2,30 @@
 
 namespace App\Serializer\Normalizer;
 
-use App\Entity\Skill;
+use App\Entity\CandidateSkill;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class SkillNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface, NormalizerAwareInterface
+class CandidateSkillNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
     public function normalize($skill, string $format = null, array $context = []): array
     {
-        /* @var $skill Skill */
+        /* @var $skill CandidateSkill */
 
         return [
-            'code' => $skill->getCode(),
-            'name' => $skill->getName(),
-            'type' => $skill->getType(),
+            'skill' => $this->normalizer->normalize($skill->getSkill(), $format, $context),
+            'candidate' => $this->normalizer->normalize($skill->getCandidate(), $format, $context),
+            'level' => $skill->getLevel(),
         ];
     }
 
     public function supportsNormalization($data, string $format = null): bool
     {
-        return $data instanceof Skill;
+        return $data instanceof CandidateSkill;
     }
 
     public function hasCacheableSupportsMethod(): bool

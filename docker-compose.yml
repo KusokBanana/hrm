@@ -23,7 +23,7 @@ services:
         volumes:
             - ./api/:/var/www/
             - ./.env:/var/www/.env.local
-            #- ./raw-data:/var/www/data
+            - ./raw-data:/var/www/data
         networks:
             - symfony
     nginx:

@@ -116,14 +116,15 @@ class Candidate
         array $experience,
         array $languages,
         ?string $about,
-        array $skills,
+//        array $skills,
         ?string $status
     )
     {
-        Assert::thatAll($skills)->isInstanceOf(CandidateSkill::class);
+//        Assert::thatAll($skills)->isInstanceOf(CandidateSkill::class);
         Assert::thatAll($experience)->isInstanceOf(Experience::class);
 //        Assert::thatAll($specialization)->isInstanceOf(Specialization::class);
         Assert::thatAll($educationHistory)->isInstanceOf(EducationHistory::class);
+        CandidateSex::validate($sex);
         CandidateStatuses::validate($status);
 
         $this->name = $name;
@@ -138,7 +139,7 @@ class Candidate
         $this->experience = $experience;
         $this->languages = $languages;
         $this->about = $about;
-        $this->skills = new ArrayCollection($skills);
+//        $this->skills = new ArrayCollection($skills);
 //        $this->relevance = new ArrayCollection();
         $this->status = $status;
     }
