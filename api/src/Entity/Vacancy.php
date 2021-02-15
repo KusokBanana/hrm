@@ -51,11 +51,18 @@ class Vacancy
         Assert::that($title)->minLength(1);
         Assert::that($description)->minLength(1);
 
+        $this->skills = new ArrayCollection();
         $this->createdAt = new \DateTime();
+
         $this->title = $title;
         $this->description = $description;
-//        $this->skills = new ArrayCollection($skills);
 //        $this->relevance = new ArrayCollection();
+    }
+
+    public function update(string $title, string $description): void
+    {
+        $this->title = $title;
+        $this->description = $description;
     }
 
     public function getId(): int
@@ -84,15 +91,6 @@ class Vacancy
     public function getSkills(): array
     {
         return $this->skills->toArray();
-    }
-
-    public function addSkill(VacancySkill $skill): self
-    {
-        if (!$this->skills->contains($skill)) {
-            $this->skills[] = $skill;
-        }
-
-        return $this;
     }
 
 //    /**

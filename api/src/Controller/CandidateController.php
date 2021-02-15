@@ -74,6 +74,21 @@ class CandidateController extends AbstractController
     }
 
     /**
+     * @Route("/candidates/{id}", name="candidate", methods={"GET"})
+     * @param int $id
+     *
+     * @return Response
+     */
+    public function candidate(int $id): Response
+    {
+        $data = $this->candidateRepository->findOneBy(['id' => $id]);
+
+        return $this->json([
+            'data' => $data,
+        ]);
+    }
+
+    /**
      * @Route("/candidates", name="create_candidate", methods={"POST"})
      * @param Request $request
      *
@@ -103,7 +118,7 @@ class CandidateController extends AbstractController
     }
 
     /**
-     * @Route("/candidates/{id}", name="update_candidates", methods={"PATCH"})
+     * @Route("/candidates/{id}", name="update_candidate", methods={"PATCH"})
      * @param Request $request
      * @param int     $id
      *
@@ -132,21 +147,6 @@ class CandidateController extends AbstractController
 
         return $this->json([
             'data' => $candidate,
-        ]);
-    }
-
-    /**
-     * @Route("/candidates/{id}", name="candidate")
-     * @param int $id
-     *
-     * @return Response
-     */
-    public function candidate(int $id): Response
-    {
-        $data = $this->candidateRepository->findOneBy(['id' => $id]);
-
-        return $this->json([
-            'data' => $data,
         ]);
     }
 }
