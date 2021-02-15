@@ -20,6 +20,7 @@ class SkillNormalizer implements NormalizerInterface, CacheableSupportsMethodInt
             'code' => $skill->getCode(),
             'name' => $skill->getName(),
             'type' => $skill->getType(),
+            'parent_code' => $skill->hasParent() ? $skill->getParent()->getCode() : null,
         ];
     }
 

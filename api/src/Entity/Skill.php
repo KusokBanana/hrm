@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Helper\Slugifier;
 use App\Repository\SkillRepository;
+use Assert\Assert;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -27,13 +28,22 @@ class Skill
      */
     private string $type;
 
-    public function __construct(string $name, string $type)
+    /**
+     * @ORM\ManyToOne(targetEntity=Skill::class)
+     * @ORM\JoinColumn(name="parent_code", referencedColumnName="code", nullable=true)
+     */
+    private ?Skill $parent;
+
+    public function __construct(string $name, string $type, Skill $parent = null)
     {
         SkillTypes::validate($type);
 
         $this->code = Slugifier::transform($name);
         $this->name = $name;
         $this->type = $type;
+        $this->parent = $parent;
+
+        Assert::that($this->code)->notEq($parent->getCode());
     }
 
     public function getCode(): string
@@ -49,6 +59,16 @@ class Skill
     public function getType(): string
     {
         return $this->type;
+    }
+
+    public function hasParent(): bool
+    {
+        return $this->parent instanceof Skill;
+    }
+
+    public function getParent(): ?Skill
+    {
+        return $this->parent;
     }
 
     public function __toString(): string
