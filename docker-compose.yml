@@ -34,7 +34,7 @@ services:
         volumes:
             - ./api/:/var/www/
         ports:
-            - 8000:80
+            - 667:80
         networks:
             - symfony
     
