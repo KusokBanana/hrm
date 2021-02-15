@@ -5,10 +5,10 @@ namespace App\Entity;
 class EducationHistory
 {
     private string $name;
-    private ?string $organization;
-    private int $year;
+    private string $organization;
+    private ?int $year;
 
-    public function __construct(string $name, ?string $organization, int $year)
+    public function __construct(string $name, string $organization, ?int $year)
     {
         $this->name = $name;
         $this->organization = $organization;

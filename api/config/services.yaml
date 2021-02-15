@@ -32,3 +32,6 @@ services:
 
     App\Serializer\Normalizer\:
         resource: '../src/Serializer/Normalizer/*'
+
+    App\Mutation\:
+        resource: '../src/Mutation/*'

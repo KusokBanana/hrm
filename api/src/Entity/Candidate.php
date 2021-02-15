@@ -127,6 +127,8 @@ class Candidate
         CandidateSex::validate($sex);
         CandidateStatuses::validate($status);
 
+        $this->skills = new ArrayCollection();
+
         $this->name = $name;
         $this->sex = $sex;
         $this->city = $city;
@@ -139,8 +141,39 @@ class Candidate
         $this->experience = $experience;
         $this->languages = $languages;
         $this->about = $about;
-//        $this->skills = new ArrayCollection($skills);
 //        $this->relevance = new ArrayCollection();
+        $this->status = $status;
+    }
+
+    public function update(
+        string $name,
+        string $sex,
+        ?string $city,
+        ?\DateTimeInterface $birthDate,
+        string $title,
+        ?int $salary,
+        array $educationHistory,
+        array $experience,
+        array $languages,
+        ?string $about,
+        ?string $status
+    )
+    {
+        Assert::thatAll($experience)->isInstanceOf(Experience::class);
+        Assert::thatAll($educationHistory)->isInstanceOf(EducationHistory::class);
+        CandidateSex::validate($sex);
+        CandidateStatuses::validate($status);
+
+        $this->name = $name;
+        $this->sex = $sex;
+        $this->city = $city;
+        $this->birthDate = $birthDate;
+        $this->title = $title;
+        $this->salary = $salary;
+        $this->educationHistory = $educationHistory;
+        $this->experience = $experience;
+        $this->languages = $languages;
+        $this->about = $about;
         $this->status = $status;
     }
 
@@ -267,4 +300,9 @@ class Candidate
 //
 //        return $this;
 //    }
+
+    public function __toString()
+    {
+        return sprintf('Candidate named "%s"', $this->name);
+    }
 }
