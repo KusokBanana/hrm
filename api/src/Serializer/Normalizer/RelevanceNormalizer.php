@@ -12,14 +12,14 @@ class RelevanceNormalizer implements NormalizerInterface, CacheableSupportsMetho
 {
     use NormalizerAwareTrait;
 
-    public function normalize($vacancy, string $format = null, array $context = []): array
+    public function normalize($object, string $format = null, array $context = []): array
     {
-        /* @var $vacancy Relevance */
+        /* @var $object Relevance */
 
         return [
-            'fit' => $vacancy->getFit(),
-            'vacancy' => $this->normalizer->normalize($vacancy->getVacancy(), $format, $context),
-            'candidate' => $this->normalizer->normalize($vacancy->getCandidate(), $format, $context),
+            'fit' => $object->getFit(),
+            'vacancy' => $this->normalizer->normalize($object->getVacancy(), $format, $context),
+            'candidate' => $this->normalizer->normalize($object->getCandidate(), $format, $context),
         ];
     }
 

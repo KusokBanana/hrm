@@ -52,11 +52,11 @@ class Vacancy
         Assert::that($description)->minLength(1);
 
         $this->skills = new ArrayCollection();
+//        $this->relevance = new ArrayCollection();
         $this->createdAt = new \DateTime();
 
         $this->title = $title;
         $this->description = $description;
-//        $this->relevance = new ArrayCollection();
     }
 
     public function update(string $title, string $description): void
