@@ -20,7 +20,7 @@ class EducationHistory
         return $this->name;
     }
 
-    public function getOrganization(): ?string
+    public function getOrganization(): string
     {
         return $this->organization;
     }
