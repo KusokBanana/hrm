@@ -17,6 +17,7 @@
         "symfony/framework-bundle": "5.2.*",
         "symfony/http-client": "5.2.*",
         "symfony/maker-bundle": "^1.24",
+        "symfony/security-bundle": "5.2.*",
         "symfony/serializer": "5.2.*",
         "symfony/yaml": "5.2.*"
     },

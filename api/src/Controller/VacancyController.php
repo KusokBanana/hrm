@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Vacancy;
 use App\Mutation\VacancyFactory;
+use App\Repository\UserRepository;
 use App\Repository\VacancyRepository;
 use Assert\Assert;
 use Assert\InvalidArgumentException;
@@ -11,7 +12,6 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 class VacancyController extends AbstractController
@@ -20,18 +20,21 @@ class VacancyController extends AbstractController
     private Connection $connection;
     private VacancyRepository $vacancyRepository;
     private VacancyFactory $vacancyFactory;
+    private UserRepository $userRepository;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         Connection $connection,
         VacancyRepository $vacancyRepository,
-        VacancyFactory $vacancyFactory
+        VacancyFactory $vacancyFactory,
+        UserRepository $userRepository
     )
     {
         $this->entityManager = $entityManager;
         $this->connection = $connection;
         $this->vacancyRepository = $vacancyRepository;
         $this->vacancyFactory = $vacancyFactory;
+        $this->userRepository = $userRepository;
     }
 
     /**
@@ -77,10 +80,12 @@ class VacancyController extends AbstractController
         $vacancy = $this->vacancyRepository->findOneBy(['id' => $id]);
 
         if (!$vacancy instanceof Vacancy) {
-            throw new NotFoundHttpException('Vacancy not found');
+            return new Response(sprintf('Unknown vacancy with id "%s"', $id), Response::HTTP_NOT_FOUND);
         }
 
-        return $this->json($vacancy);
+        return $this->json([
+            'data' => $vacancy,
+        ]);
     }
 
     /**
@@ -91,6 +96,7 @@ class VacancyController extends AbstractController
      */
     public function create(Request $request): Response
     {
+        $user = $this->getUser();
         $vacancy = null;
         try {
             $parameters = $this->getRequestData(
@@ -98,8 +104,9 @@ class VacancyController extends AbstractController
                 ['skills', 'title', 'description']
             );
 
-            $this->entityManager->transactional(function() use (&$vacancy, $parameters) {
+            $this->entityManager->transactional(function() use (&$vacancy, $parameters, $user) {
                 $vacancy = $this->vacancyFactory->create($parameters);
+                $this->userRepository->setVacancy($user, $vacancy);
             });
         } catch (InvalidArgumentException $exception) {
             return new Response($exception->getMessage(), Response::HTTP_BAD_REQUEST);
@@ -121,7 +128,15 @@ class VacancyController extends AbstractController
      */
     public function update(Request $request, int $id): Response
     {
-        $candidate = $this->vacancyRepository->findOneBy(['id' => $id]);
+        $vacancy = $this->vacancyRepository->findOneBy(['id' => $id]);
+
+        if (!$vacancy instanceof Vacancy) {
+            return new Response(sprintf('Unknown vacancy with id "%s"', $id), Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$this->getUser()->getVacancy() instanceof Vacancy || $this->getUser()->getVacancy()->getId() !== $id) {
+            return new Response('You are not allowed to update this candidate', Response::HTTP_FORBIDDEN);
+        }
 
         try {
             $parameters = $this->getRequestData(
@@ -131,17 +146,17 @@ class VacancyController extends AbstractController
 
             Assert::that($parameters->count())->greaterThan(0);
 
-            $this->entityManager->transactional(function() use ($candidate, $parameters) {
-                $this->vacancyFactory->update($candidate, $parameters);
+            $this->entityManager->transactional(function() use ($vacancy, $parameters) {
+                $this->vacancyFactory->update($vacancy, $parameters);
             });
         } catch (InvalidArgumentException $exception) {
             return new Response($exception->getMessage(), Response::HTTP_BAD_REQUEST);
         }
 
-        $this->entityManager->refresh($candidate);
+        $this->entityManager->refresh($vacancy);
 
         return $this->json([
-            'data' => $candidate,
+            'data' => $vacancy,
         ]);
     }
 }
