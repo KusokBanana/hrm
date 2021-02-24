@@ -24,9 +24,9 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-configure gd --with-jpeg --with-freetype
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql
 
-RUN docker-php-ext-install pdo_pgsql pgsql intl
+RUN docker-php-ext-install pdo_pgsql pgsql #intl
 
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+#COPY --from=composer /usr/bin/composer /usr/bin/composer
 
-RUN composer install
+#RUN composer install
 # zip gd intl mbstring
