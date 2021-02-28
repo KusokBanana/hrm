@@ -15,6 +15,7 @@ services:
             - symfony
         volumes:
             - ./dbdata:/var/lib/postgresql/data
+            - ./docker/database/run.sh:/run.sh
     php-fpm:
         container_name: hrm_php
         build:
@@ -31,6 +32,7 @@ services:
         build:
             context: .
             dockerfile: docker/nginx/Dockerfile
+        restart: always
         volumes:
             - ./api/:/var/www/
         ports:
@@ -72,19 +74,19 @@ services:
 #        networks:
 #            - symfony
     
-    # prediction:
-    #     container_name: hr_prediction
-    #     build:
-    #         context: ./prediction
-    #         dockerfile: Dockerfile
-    #     ports:
-    #         - 80:8822
-    #     environment:
-    #         POSTGRES_PASSWORD: ${DB_PASSWORD}
-    #         POSTGRES_USER: ${DB_USER}
-    #         POSTGRES_DB: ${DB_NAME}
-    #     networks:
-    #         - symfony
+    prediction:
+        container_name: hrm_prediction
+        build:
+            context: .
+            dockerfile: docker/prediction/Dockerfile
+        restart: always
+        volumes:
+            - ./prediction:/usr/src/app
+            - ./.env:/usr/src/app/.env
+        ports:
+            - 668:80
+        networks:
+            - symfony
 
 networks:
     symfony:
