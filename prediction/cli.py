@@ -26,12 +26,13 @@ model = Matching()
 model.fit(corpus)
 
 relevance = []
-for resume in resumes:
-    for vacancy in vacancies:
-        score = model.score_pair(resume, vacancy.get('description'))
+for vacancy in vacancies:
+    scores = model.score_resume(resumes, vacancy.get('description'))
+    for i in range(len(scores)):
+        score = scores[i]
+        resume = resumes[i]
         item = ([resume.get('id'), vacancy.get('id'), to_prob(score) / 100])
         relevance.append(item)
-        # print('{}-{}'.format(resume.get('id'), vacancy.get('id')))
 
 database.save_relevance(relevance)
 

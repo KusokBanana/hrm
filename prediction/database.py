@@ -46,8 +46,9 @@ class Database:
 
     def save_relevance(self, data: List[tuple]):
         cursor = self.__connection.cursor()
-        upsert_query = 'INSERT INTO relevance (candidate_id, vacancy_id, fit) VALUES %s ON CONFLICT (candidate_id, vacancy_id) DO UPDATE fit = excluded.fit'
+        upsert_query = 'INSERT INTO relevance (candidate_id, vacancy_id, fit) VALUES %s ON CONFLICT (candidate_id, vacancy_id) DO UPDATE SET fit = excluded.fit'
         psycopg2.extras.execute_values (
             cursor, upsert_query, data, template=None, page_size=1000
         )
-        cursor.commit()
+        self.__connection.commit()
+        self.__connection.close()
