@@ -148,6 +148,7 @@ class SkillController extends AbstractController
 
         try {
             $this->skillFactory->delete($skill);
+            $this->entityManager->flush();
         } catch (InvalidArgumentException $exception) {
             return new Response($exception->getMessage(), Response::HTTP_BAD_REQUEST);
         }
