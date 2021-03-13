@@ -37,13 +37,30 @@ class Skill
     public function __construct(string $name, string $type, Skill $parent = null)
     {
         SkillTypes::validate($type);
+        Assert::that($name)->maxLength(255);
 
         $this->code = Slugifier::transform($name);
         $this->name = $name;
         $this->type = $type;
         $this->parent = $parent;
 
-        Assert::that($this->code)->notEq($parent->getCode());
+        if ($parent instanceof Skill) {
+            Assert::that($this->code)->notEq($parent->getCode());
+        }
+    }
+
+    public function update(string $name, string $type, Skill $parent = null): void
+    {
+        SkillTypes::validate($type);
+        Assert::that($name)->maxLength(255);
+
+        $this->name = $name;
+        $this->type = $type;
+        $this->parent = $parent;
+
+        if ($parent instanceof Skill) {
+            Assert::that($this->code)->notEq($parent->getCode());
+        }
     }
 
     public function getCode(): string

@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Skill;
 use App\Entity\SkillTypes;
+use App\Mutation\SkillFactory;
+use App\Repository\SkillRepository;
+use Assert\InvalidArgumentException;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -13,14 +15,22 @@ use Symfony\Component\Routing\Annotation\Route;
 class SkillController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
+    private SkillFactory $skillFactory;
+    private SkillRepository $skillRepository;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        SkillFactory $skillFactory,
+        SkillRepository $skillRepository
+    )
     {
         $this->entityManager = $entityManager;
+        $this->skillFactory  = $skillFactory;
+        $this->skillRepository = $skillRepository;
     }
 
     /**
-     * @Route("/skills", name="skills")
+     * @Route("/skills", name="skills", methods={"GET"})
      */
     public function index(Request $request): Response
     {
@@ -65,5 +75,83 @@ class SkillController extends AbstractController
         return $this->json([
             'data' => $queryBuilder->getQuery()->getResult(),
         ]);
+    }
+
+    /**
+     * @Route("/skills", name="create_skill", methods={"POST"})
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function create(Request $request): Response
+    {
+//        $user = $this->getUser();
+        try {
+            $parameters = $this->getRequestData($request, ['name', 'type', 'parent_code']);
+            $skill = $this->skillFactory->create($parameters);
+            $this->entityManager->flush();
+        } catch (InvalidArgumentException $exception) {
+            return new Response($exception->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+
+        $this->entityManager->refresh($skill);
+
+        return $this->json([
+            'data' => $skill,
+        ]);
+    }
+
+    /**
+     * @Route("/skills/{code}", name="update_skill", methods={"PATCH"})
+     * @param Request $request
+     * @param string  $code
+     *
+     * @return Response
+     */
+    public function update(Request $request, string $code): Response
+    {
+        $skill = $this->skillRepository->find($code);
+
+        if (!$skill instanceof Skill) {
+            return new Response(sprintf('Unknown skill with code "%s"', $code), Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $parameters = $this->getRequestData($request, ['name', 'type', 'parent_code']);
+            $this->skillFactory->update($skill, $parameters);
+            $this->entityManager->flush();
+        } catch (InvalidArgumentException $exception) {
+            return new Response($exception->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+
+        $this->entityManager->refresh($skill);
+
+        return $this->json([
+            'data' => $skill,
+        ]);
+    }
+
+    /**
+     * @Route("/skills/{code}", name="delete_skill", methods={"DELETE"})
+     * @param Request $request
+     * @param string  $code
+     *
+     * @return Response
+     */
+    public function delete(Request $request, string $code): Response
+    {
+        $skill = $this->skillRepository->find($code);
+
+        if (!$skill instanceof Skill) {
+            return new Response(sprintf('Unknown skill with code "%s"', $code), Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $this->skillFactory->delete($skill);
+        } catch (InvalidArgumentException $exception) {
+            return new Response($exception->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+
+        return new Response('', Response::HTTP_NO_CONTENT);
     }
 }

@@ -38,3 +38,4 @@ security:
         # - { path: ^/profile, roles: ROLE_USER }
         - { path: '^/candidates', methods: ["POST", "PATCH"], roles: [ROLE_USER] }
         - { path: '^/vacancies', methods: ["POST", "PATCH"], roles: [ROLE_USER] }
+        - { path: '^/skills', methods: ["POST", "PATCH", "DELETE"], roles: [ROLE_USER] }
