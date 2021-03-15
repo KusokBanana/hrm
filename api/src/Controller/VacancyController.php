@@ -59,8 +59,8 @@ class VacancyController extends AbstractController
 
         if ($request->query->has('skills')) {
             $queryBuilder
-                ->join('vacancy.skills', 'skills')
-                ->andWhere($expr->in('skills.id', ':skills'))
+                ->join('vacancy.skills', 'vacancy_skills')
+                ->andWhere($expr->in('IDENTITY(vacancy_skills.skill)', ':skills'))
                 ->setParameter('skills', $request->query->get('skills'));
         }
 

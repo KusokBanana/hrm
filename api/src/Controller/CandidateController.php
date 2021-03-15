@@ -57,8 +57,8 @@ class CandidateController extends AbstractController
 
         if ($request->query->has('skills')) {
             $queryBuilder
-                ->join('candidate.skills', 'skills')
-                ->andWhere($expr->in('skills.id', ':skills'))
+                ->join('candidate.skills', 'candidate_skill')
+                ->andWhere($expr->in('IDENTITY(candidate_skill.skill)', ':skills'))
                 ->setParameter('skills', $request->query->get('skills'));
         }
 
