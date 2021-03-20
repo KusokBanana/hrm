@@ -41,8 +41,8 @@ class Vacancy
     private Collection $skills;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy=vacancies)
-     * @ORM\JoinColumn(nullable=false, name="author_login")
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="vacancies")
+     * @ORM\JoinColumn(nullable=false, name="author_login", referencedColumnName="login")
      */
     private User $author;
 

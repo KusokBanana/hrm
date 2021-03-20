@@ -89,8 +89,8 @@ class Candidate
     private ?string $status;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy=candidates)
-     * @ORM\JoinColumn(nullable=false, name="author_login")
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="candidates")
+     * @ORM\JoinColumn(nullable=false, name="author_login", referencedColumnName="login")
      */
     private User $author;
 
