@@ -2,10 +2,7 @@
 
 namespace App\Mutation;
 
-use App\Entity\Candidate;
-use App\Entity\CandidateSkill;
-use App\Entity\EducationHistory;
-use App\Entity\Experience;
+use App\Entity\User;
 use App\Entity\Vacancy;
 use App\Entity\VacancySkill;
 use App\Repository\SkillRepository;
@@ -27,9 +24,10 @@ class VacancyFactory
         $this->entityManager = $entityManager;
     }
 
-    public function create(ParameterBag $data): Vacancy
+    public function create(User $user, ParameterBag $data): Vacancy
     {
         $vacancy = new Vacancy(
+            $user,
             $data->get('title'),
             $data->get('description'),
         );
@@ -43,8 +41,10 @@ class VacancyFactory
         return $vacancy;
     }
 
-    public function update(Vacancy $vacancy, ParameterBag $data): void
+    public function update(User $user, Vacancy $vacancy, ParameterBag $data): void
     {
+        Assert::that($user->getUsername())->eq($vacancy->getAuthor()->getUsername());
+
         if ($data->has('skills')) {
             $this->updateSkills($vacancy, $data->get('skills'));
         }

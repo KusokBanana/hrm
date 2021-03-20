@@ -40,12 +40,18 @@ class Vacancy
      */
     private Collection $skills;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy=vacancies)
+     * @ORM\JoinColumn(nullable=false, name="author_login")
+     */
+    private User $author;
+
 //    /**
 //     * @ORM\OneToMany(targetEntity=Relevance::class, mappedBy="vacancy")
 //     */
 //    private Collection $relevance;
 
-    public function __construct(string $title, string $description/*, array $skills*/)
+    public function __construct(User $author, string $title, string $description/*, array $skills*/)
     {
 //        Assert::thatAll($skills)->isInstanceOf(VacancySkill::class);
         Assert::that($title)->minLength(1);
@@ -55,6 +61,7 @@ class Vacancy
 //        $this->relevance = new ArrayCollection();
         $this->createdAt = new \DateTime();
 
+        $this->author = $author;
         $this->title = $title;
         $this->description = $description;
     }
@@ -83,6 +90,11 @@ class Vacancy
     public function getCreatedAt(): \DateTimeInterface
     {
         return $this->createdAt;
+    }
+
+    public function getAuthor(): User
+    {
+        return $this->author;
     }
 
     /**

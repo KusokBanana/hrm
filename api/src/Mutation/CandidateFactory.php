@@ -6,6 +6,7 @@ use App\Entity\Candidate;
 use App\Entity\CandidateSkill;
 use App\Entity\EducationHistory;
 use App\Entity\Experience;
+use App\Entity\User;
 use App\Repository\SkillRepository;
 use Assert\Assert;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,7 +26,7 @@ class CandidateFactory
         $this->entityManager = $entityManager;
     }
 
-    public function create(ParameterBag $data): Candidate
+    public function create(User $user, ParameterBag $data): Candidate
     {
         $educationHistory = [];
         if ($data->has('education_history')) {
@@ -64,6 +65,7 @@ class CandidateFactory
         }
 
         $candidate = new Candidate(
+            $user,
             $data->get('name'),
             $data->get('sex'),
             $data->get('city'),
@@ -86,8 +88,10 @@ class CandidateFactory
         return $candidate;
     }
 
-    public function update(Candidate $candidate, ParameterBag $data): void
+    public function update(User $user, Candidate $candidate, ParameterBag $data): void
     {
+        Assert::that($user->getUsername())->eq($candidate->getAuthor()->getUsername());
+
         if ($data->has('skills')) {
             $this->updateSkills($candidate, $data->get('skills'));
         }

@@ -89,6 +89,12 @@ class Candidate
     private ?string $status;
 
     /**
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy=candidates)
+     * @ORM\JoinColumn(nullable=false, name="author_login")
+     */
+    private User $author;
+
+    /**
      * @ORM\OneToMany(targetEntity=CandidateSkill::class, mappedBy="candidate")
      */
     private Collection $skills;
@@ -104,6 +110,7 @@ class Candidate
 //    private ?Relevance $mostRelevant;
 
     public function __construct(
+        User $author,
         string $name,
         string $sex,
         ?string $city,
@@ -129,6 +136,7 @@ class Candidate
 
         $this->skills = new ArrayCollection();
 
+        $this->author = $author;
         $this->name = $name;
         $this->sex = $sex;
         $this->city = $city;
@@ -244,6 +252,11 @@ class Candidate
     public function getLanguages(): array
     {
         return $this->languages;
+    }
+
+    public function getAuthor(): User
+    {
+        return $this->author;
     }
 
     /**

@@ -96,7 +96,6 @@ class VacancyController extends AbstractController
      */
     public function create(Request $request): Response
     {
-        $user = $this->getUser();
         $vacancy = null;
         try {
             $parameters = $this->getRequestData(
@@ -104,9 +103,8 @@ class VacancyController extends AbstractController
                 ['skills', 'title', 'description']
             );
 
-            $this->entityManager->transactional(function() use (&$vacancy, $parameters, $user) {
-                $vacancy = $this->vacancyFactory->create($parameters);
-                $this->userRepository->setVacancy($user, $vacancy);
+            $this->entityManager->transactional(function() use (&$vacancy, $parameters) {
+                $vacancy = $this->vacancyFactory->create($this->getUser(), $parameters);
             });
         } catch (InvalidArgumentException $exception) {
             return new Response($exception->getMessage(), Response::HTTP_BAD_REQUEST);
@@ -134,7 +132,7 @@ class VacancyController extends AbstractController
             return new Response(sprintf('Unknown vacancy with id "%s"', $id), Response::HTTP_NOT_FOUND);
         }
 
-        if (!$this->getUser()->getVacancy() instanceof Vacancy || $this->getUser()->getVacancy()->getId() !== $id) {
+        if ($this->getUser()->getUsername() !== $vacancy->getAuthor()->getUsername()) {
             return new Response('You are not allowed to update this candidate', Response::HTTP_FORBIDDEN);
         }
 
@@ -147,7 +145,7 @@ class VacancyController extends AbstractController
             Assert::that($parameters->count())->greaterThan(0);
 
             $this->entityManager->transactional(function() use ($vacancy, $parameters) {
-                $this->vacancyFactory->update($vacancy, $parameters);
+                $this->vacancyFactory->update($this->getUser(), $vacancy, $parameters);
             });
         } catch (InvalidArgumentException $exception) {
             return new Response($exception->getMessage(), Response::HTTP_BAD_REQUEST);

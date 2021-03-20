@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Assert\Assert;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -35,16 +37,14 @@ class User implements UserInterface
     private ?string $token;
 
     /**
-     * @ORM\OneToOne(targetEntity=Candidate::class)
-     * @ORM\JoinColumn(nullable=true)
+     * @ORM\OneToMany(targetEntity=Candidate::class, mappedBy="author")
      */
-    private ?Candidate $candidate;
+    private Collection $candidates;
 
     /**
-     * @ORM\OneToOne(targetEntity=Vacancy::class)
-     * @ORM\JoinColumn(nullable=true)
+     * @ORM\OneToMany(targetEntity=Vacancy::class, mappedBy="author")
      */
-    private ?Vacancy $vacancy;
+    private Collection $vacancies;
 
     public function __construct(string $login, array $roles = [])
     {
@@ -54,8 +54,8 @@ class User implements UserInterface
         $this->login = $login;
         $this->roles = array_unique([...$roles, 'ROLE_USER']);
         $this->token = null;
-        $this->candidate = null;
-        $this->vacancy = null;
+        $this->candidates = new ArrayCollection();
+        $this->vacancies = new ArrayCollection();
     }
 
     public function getUsername(): string
@@ -121,25 +121,31 @@ class User implements UserInterface
         // $this->plainPassword = null;
     }
 
-    public function getCandidate(): ?Candidate
+    /**
+     * @return Candidate[]
+     */
+    public function getCandidates(): array
     {
-        return $this->candidate;
+        return $this->candidates->toArray();
     }
 
-    public function setCandidate(Candidate $candidate): self
+    public function addCandidate(Candidate $candidate): self
     {
-        $this->candidate = $candidate;
+        $this->candidates->add($candidate);
         return $this;
     }
 
-    public function getVacancy(): ?Vacancy
+    /**
+     * @return Vacancy[]
+     */
+    public function getVacancies(): array
     {
-        return $this->vacancy;
+        return $this->vacancies->toArray();
     }
 
-    public function setVacancy(Vacancy $vacancy): self
+    public function addVacancy(Vacancy $vacancy): self
     {
-        $this->vacancy = $vacancy;
+        $this->vacancies->add($vacancy);
         return $this;
     }
 }

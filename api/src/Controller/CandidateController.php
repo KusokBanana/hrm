@@ -102,7 +102,6 @@ class CandidateController extends AbstractController
      */
     public function create(Request $request): Response
     {
-        $user = $this->getUser();
         $candidate = null;
         try {
             $parameters = $this->getRequestData(
@@ -110,9 +109,8 @@ class CandidateController extends AbstractController
                 ['skills', 'name', 'sex', 'city', 'birth_date', 'title', 'salary', 'education_history', 'experience', 'languages', 'about', 'status']
             );
 
-            $this->entityManager->transactional(function() use (&$candidate, $parameters, $user) {
-                $candidate = $this->candidateFactory->create($parameters);
-                $this->userRepository->setCandidate($user, $candidate);
+            $this->entityManager->transactional(function() use (&$candidate, $parameters) {
+                $candidate = $this->candidateFactory->create($this->getUser(), $parameters);
             });
         } catch (InvalidArgumentException $exception) {
             return new Response($exception->getMessage(), Response::HTTP_BAD_REQUEST);
@@ -140,7 +138,7 @@ class CandidateController extends AbstractController
             return new Response(sprintf('Unknown candidate with id "%s"', $id), Response::HTTP_NOT_FOUND);
         }
 
-        if (!$this->getUser()->getCandidate() instanceof Candidate || $this->getUser()->getCandidate()->getId() !== $id) {
+        if ($this->getUser()->getUsername() !== $candidate->getAuthor()->getUsername()) {
             return new Response('You are not allowed to update this candidate', Response::HTTP_FORBIDDEN);
         }
 
@@ -153,7 +151,7 @@ class CandidateController extends AbstractController
             Assert::that($parameters->count())->greaterThan(0);
 
             $this->entityManager->transactional(function() use ($candidate, $parameters) {
-                $this->candidateFactory->update($candidate, $parameters);
+                $this->candidateFactory->update($this->getUser(), $candidate, $parameters);
             });
         } catch (InvalidArgumentException $exception) {
             return new Response($exception->getMessage(), Response::HTTP_BAD_REQUEST);
