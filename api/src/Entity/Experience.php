@@ -2,19 +2,88 @@
 
 namespace App\Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity(repositoryClass=Experience::class)
+ * @ORM\Table(
+ *    uniqueConstraints={
+ *        @ORM\UniqueConstraint(name="experience_unique",
+ *            columns={"candidate_id", "company_id", "started_at"})
+ *    }
+ * )
+ */
 class Experience
 {
-    private string $position;
-    private string $description;
-    private \DateTimeInterface $start;
-    private ?\DateTimeInterface $end;
+    /**
+     * @ORM\Id
+     * @ORM\GeneratedValue
+     * @ORM\Column(type="integer")
+     */
+    private int $id;
 
-    public function __construct(string $position, string $description, \DateTimeInterface $start, ?\DateTimeInterface $end)
+    /**
+     * @ORM\ManyToOne(targetEntity=Candidate::class)
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private Candidate $candidate;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Company::class)
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private Company $company;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private string $position;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private ?string $description;
+
+    /**
+     * @ORM\Column(type="date")
+     */
+    private \DateTimeInterface $startedAt;
+
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private ?\DateTimeInterface $endedAt;
+
+    public function __construct(
+        Candidate $candidate,
+        Company $company,
+        string $position,
+        ?string $description,
+        \DateTimeInterface $startedAt,
+        ?\DateTimeInterface $endedAt
+    )
     {
+        $this->candidate = $candidate;
+        $this->company = $company;
         $this->position = $position;
         $this->description = $description;
-        $this->start = $start;
-        $this->end = $end;
+        $this->startedAt = $startedAt;
+        $this->endedAt = $endedAt;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getCandidate(): Candidate
+    {
+        return $this->candidate;
+    }
+
+    public function getCompany(): Company
+    {
+        return $this->company;
     }
 
     public function getPosition(): string
@@ -22,23 +91,23 @@ class Experience
         return $this->position;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function getStart(): \DateTimeInterface
+    public function getStartedAt(): \DateTimeInterface
     {
-        return $this->start;
+        return $this->startedAt;
     }
 
-    public function getEnd(): ?\DateTimeInterface
+    public function getEndedAt(): ?\DateTimeInterface
     {
-        return $this->end;
+        return $this->endedAt;
     }
 
-    public function hasEnd(): bool
+    public function hasEndedAt(): bool
     {
-        return $this->end instanceof \DateTimeInterface;
+        return $this->endedAt instanceof \DateTimeInterface;
     }
 }

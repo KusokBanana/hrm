@@ -44,15 +44,7 @@ class CandidateNormalizer implements NormalizerInterface, CacheableSupportsMetho
                 ],
                 $candidate->getEducationHistory(),
             ),
-            'experience' => array_map(
-                fn(Experience $experience) => [
-                    'position' => $experience->getPosition(),
-                    'description' => $experience->getDescription(),
-                    'start' => $this->normalizer->normalize($experience->getStart(), $format, $context),
-                    'end' => $this->normalizer->normalize($experience->getEnd(), $format, $context),
-                ],
-                $candidate->getExperience()
-            ),
+            'experience' => $this->getExperience($candidate, $format, $context),
             'languages' => $candidate->getLanguages(),
             'skills' => array_map(
                 fn(CandidateSkill $skill) => [
@@ -66,6 +58,23 @@ class CandidateNormalizer implements NormalizerInterface, CacheableSupportsMetho
 //                'vacancy' => $candidate->getMostRelevant()->getVacancy()->getTitle(),
 //            ] : null,
         ];
+    }
+
+    private function getExperience(Candidate $candidate, string $format = null, array $context = []): array
+    {
+        return array_map(
+            fn(Experience $experience) => [
+                'company' => [
+                    'id' => $experience->getCompany()->getId(),
+                    'name' => $experience->getCompany()->getName(),
+                ],
+                'position' => $experience->getPosition(),
+                'description' => $experience->getDescription(),
+                'start' => $this->normalizer->normalize($experience->getStartedAt(), $format, $context),
+                'end' => $this->normalizer->normalize($experience->getEndedAt(), $format, $context),
+            ],
+            $candidate->getExperience()
+        );
     }
 
     public function supportsNormalization($data, string $format = null): bool

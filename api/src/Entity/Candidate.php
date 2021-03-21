@@ -68,12 +68,6 @@ class Candidate
     private array $educationHistory;
 
     /**
-     * @ORM\Column(type="array_experience")
-     * @var Experience[]
-     */
-    private array $experience;
-
-    /**
      * @ORM\Column(type="simple_array")
      */
     private array $languages;
@@ -93,6 +87,11 @@ class Candidate
      * @ORM\JoinColumn(nullable=false, name="author_login", referencedColumnName="login")
      */
     private User $author;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Experience::class, mappedBy="candidate")
+     */
+    private Collection $experience;
 
     /**
      * @ORM\OneToMany(targetEntity=CandidateSkill::class, mappedBy="candidate")
@@ -120,21 +119,18 @@ class Candidate
         ?int $salary,
 //        string $education,
         array $educationHistory,
-        array $experience,
         array $languages,
         ?string $about,
-//        array $skills,
         ?string $status
     )
     {
-//        Assert::thatAll($skills)->isInstanceOf(CandidateSkill::class);
-        Assert::thatAll($experience)->isInstanceOf(Experience::class);
 //        Assert::thatAll($specialization)->isInstanceOf(Specialization::class);
         Assert::thatAll($educationHistory)->isInstanceOf(EducationHistory::class);
         CandidateSex::validate($sex);
         CandidateStatuses::validate($status);
 
         $this->skills = new ArrayCollection();
+        $this->experience = new ArrayCollection();
 
         $this->author = $author;
         $this->name = $name;
@@ -146,7 +142,6 @@ class Candidate
         $this->salary = $salary;
 //        $this->education = $education;
         $this->educationHistory = $educationHistory;
-        $this->experience = $experience;
         $this->languages = $languages;
         $this->about = $about;
 //        $this->relevance = new ArrayCollection();
@@ -161,13 +156,11 @@ class Candidate
         string $title,
         ?int $salary,
         array $educationHistory,
-        array $experience,
         array $languages,
         ?string $about,
         ?string $status
     )
     {
-        Assert::thatAll($experience)->isInstanceOf(Experience::class);
         Assert::thatAll($educationHistory)->isInstanceOf(EducationHistory::class);
         CandidateSex::validate($sex);
         CandidateStatuses::validate($status);
@@ -179,7 +172,6 @@ class Candidate
         $this->title = $title;
         $this->salary = $salary;
         $this->educationHistory = $educationHistory;
-        $this->experience = $experience;
         $this->languages = $languages;
         $this->about = $about;
         $this->status = $status;
@@ -234,11 +226,6 @@ class Candidate
         return $this->educationHistory;
     }
 
-    public function getExperience(): array
-    {
-        return $this->experience;
-    }
-
     public function getAbout(): ?string
     {
         return $this->about;
@@ -257,6 +244,19 @@ class Candidate
     public function getAuthor(): User
     {
         return $this->author;
+    }
+
+    /**
+     * @return Experience[]
+     */
+    public function getExperience(): array
+    {
+        $experience = $this->experience->toArray();
+        usort(
+            $experience,
+            fn(Experience $experienceA, Experience $experienceB) => $experienceA->getStartedAt() <=> $experienceB->getStartedAt()
+        );
+        return $experience;
     }
 
     /**
@@ -314,7 +314,7 @@ class Candidate
 //        return $this;
 //    }
 
-    public function __toString()
+    public function __toString(): string
     {
         return sprintf('Candidate named "%s"', $this->name);
     }

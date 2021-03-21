@@ -21,6 +21,12 @@ class Vacancy
     private int $id;
 
     /**
+     * @ORM\ManyToOne(targetEntity=Company::class)
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private Company $company;
+
+    /**
      * @ORM\Column(type="text")
      */
     private string $description;
@@ -51,9 +57,8 @@ class Vacancy
 //     */
 //    private Collection $relevance;
 
-    public function __construct(User $author, string $title, string $description/*, array $skills*/)
+    public function __construct(Company $company, User $author, string $title, string $description)
     {
-//        Assert::thatAll($skills)->isInstanceOf(VacancySkill::class);
         Assert::that($title)->minLength(1);
         Assert::that($description)->minLength(1);
 
@@ -61,6 +66,7 @@ class Vacancy
 //        $this->relevance = new ArrayCollection();
         $this->createdAt = new \DateTime();
 
+        $this->company = $company;
         $this->author = $author;
         $this->title = $title;
         $this->description = $description;
@@ -75,6 +81,11 @@ class Vacancy
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getCompany(): Company
+    {
+        return $this->company;
     }
 
     public function getTitle(): string

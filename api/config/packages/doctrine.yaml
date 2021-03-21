@@ -9,7 +9,6 @@ doctrine:
         server_version: '12'
         charset: 'UTF8'
         types:
-            array_experience: { class: App\Doctrine\Type\ExperienceType }
             array_specialization: { class: App\Doctrine\Type\SpecializationType }
             array_education_history: { class: App\Doctrine\Type\EducationHistoryType }
     orm:

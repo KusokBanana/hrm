@@ -4,9 +4,11 @@ namespace App\Mutation;
 
 use App\Entity\Candidate;
 use App\Entity\CandidateSkill;
+use App\Entity\Company;
 use App\Entity\EducationHistory;
 use App\Entity\Experience;
 use App\Entity\User;
+use App\Repository\CompanyRepository;
 use App\Repository\SkillRepository;
 use Assert\Assert;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,14 +17,17 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 class CandidateFactory
 {
     private SkillRepository $skillRepository;
+    private CompanyRepository $companyRepository;
     private EntityManagerInterface $entityManager;
 
     public function __construct(
         SkillRepository $skillRepository,
+        CompanyRepository $companyRepository,
         EntityManagerInterface $entityManager
     )
     {
         $this->skillRepository = $skillRepository;
+        $this->companyRepository = $companyRepository;
         $this->entityManager = $entityManager;
     }
 
@@ -44,26 +49,6 @@ class CandidateFactory
             }
         }
 
-        $experience = [];
-        if ($data->has('experience')) {
-            $experienceData = $data->get('experience');
-
-            Assert::that($experienceData)->isArray();
-            Assert::thatAll($experienceData)
-                ->keyExists('position')
-                ->keyExists('description')
-                ->keyExists('start');
-
-            foreach ($experienceData as $item) {
-                $experience[] = new Experience(
-                    $item['position'],
-                    $item['description'],
-                    new \DateTime($item['start']),
-                    array_key_exists('end', $item) ? new \DateTime($item['end']) : null,
-                );
-            }
-        }
-
         $candidate = new Candidate(
             $user,
             $data->get('name'),
@@ -73,7 +58,6 @@ class CandidateFactory
             $data->get('title'),
             $data->get('salary'),
             $educationHistory,
-            $experience,
             $data->get('languages'),
             $data->get('about'),
             $data->get('status'),
@@ -83,6 +67,10 @@ class CandidateFactory
 
         if ($data->has('skills')) {
             $this->updateSkills($candidate, $data->get('skills'));
+        }
+
+        if ($data->has('experience')) {
+            $this->updateExperience($candidate, $data->get('experience'));
         }
 
         return $candidate;
@@ -115,25 +103,7 @@ class CandidateFactory
         }
 
         if ($data->has('experience')) {
-            $experience = [];
-            $experienceData = $data->get('experience');
-
-            Assert::that($experienceData)->isArray();
-            Assert::thatAll($experienceData)
-                ->keyExists('position')
-                ->keyExists('description')
-                ->keyExists('start');
-
-            foreach ($experienceData as $item) {
-                $experience[] = new Experience(
-                    $item['position'],
-                    $item['description'],
-                    new \DateTime($item['start']),
-                    array_key_exists('end', $item) ? new \DateTime($item['end']) : null,
-                );
-            }
-        } else {
-            $experience = $candidate->getExperience();
+            $this->updateExperience($candidate, $data->get('experience'));
         }
 
         if ($data->has('birth_date')) {
@@ -150,7 +120,6 @@ class CandidateFactory
             $data->get('title', $candidate->getTitle()),
             $data->get('salary', $candidate->getSalary()),
             $educationHistory,
-            $experience,
             $data->get('languages', $candidate->getLanguages()),
             $data->get('about', $candidate->getAbout()),
             $data->get('status', $candidate->getStatus()),
@@ -172,6 +141,37 @@ class CandidateFactory
             $skill = $this->skillRepository->findOneBy(['code' => $item['skill']]);
             $candidateSkill = new CandidateSkill($candidate, $skill, $item['level']);
             $this->entityManager->persist($candidateSkill);
+        }
+    }
+
+    public function updateExperience(Candidate $candidate, array $data): void
+    {
+        Assert::that($data)->isArray();
+        Assert::thatAll($data)
+            ->keyExists('company_id')
+            ->keyExists('position')
+            ->keyExists('description')
+            ->keyExists('start');
+
+        $company = $this->companyRepository->find($data['company_id']);
+        Assert::that($company)->isInstanceOf(Company::class);
+
+        foreach ($candidate->getExperience() as $experience) {
+            $this->entityManager->remove($experience);
+        }
+
+        $this->entityManager->flush();
+
+        foreach ($data as $item) {
+            $experience = new Experience(
+                $candidate,
+                $company,
+                $item['position'],
+                $item['description'],
+                new \DateTime($item['start']),
+                array_key_exists('end', $item) ? new \DateTime($item['end']) : null,
+            );
+            $this->entityManager->persist($experience);
         }
     }
 }
