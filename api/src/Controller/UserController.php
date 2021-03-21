@@ -69,7 +69,17 @@ class UserController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        return new JsonResponse(['login' => $user->getUsername(), 'token' => $token]);
+        return $this->json(['login' => $user->getUsername(), 'token' => $token]);
+    }
+
+    /**
+     * @Route("/users/me", name="me", methods={"GET"})
+     */
+    public function me(): Response
+    {
+        return $this->json([
+            'data' => $this->getUser(),
+        ]);
     }
 
     /**

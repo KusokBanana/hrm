@@ -20,7 +20,7 @@ class CompanyNormalizer implements NormalizerInterface, CacheableSupportsMethodI
             'name' => $company->getName(),
             'description' => $company->getDescription(),
             'author' => [
-                'username' => $company->getAuthor()->getUsername(),
+                'login' => $company->getAuthor()->getUsername(),
             ],
         ];
     }

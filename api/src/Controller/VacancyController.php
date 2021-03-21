@@ -64,6 +64,12 @@ class VacancyController extends AbstractController
                 ->setParameter('skills', $request->query->get('skills'));
         }
 
+        if ($request->query->has('companies')) {
+            $queryBuilder
+                ->andWhere($expr->in('IDENTITY(vacancy.company)', ':companies'))
+                ->setParameter('companies', $request->query->get('companies'));
+        }
+
         return $this->json([
             'data' => $queryBuilder->getQuery()->getResult(),
         ]);

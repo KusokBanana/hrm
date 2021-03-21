@@ -21,6 +21,7 @@ class VacancyNormalizer implements NormalizerInterface, CacheableSupportsMethodI
             'id' => $object->getId(),
             'created_at' => $this->normalizer->normalize($object->getCreatedAt(), $format, $context),
             'title' => $object->getTitle(),
+            'company' => $this->normalizer->normalize($object->getCompany(), $format, $context),
             'description' => $object->getDescription(),
             'skills' => array_map(
                 fn(VacancySkill $skill) => [
